@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from inst_app.models import User
+from inst_app.models import User,Post
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -19,3 +19,18 @@ class UserSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
+
+class PostSerializer(serializers.ModelSerializer):
+    title = serializers.CharField()
+    description = serializers.CharField()
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+    def update(self, instance, validated_data):
+        if instance.user.id == validated_data['user'].id:
+            return super().update(instance, validated_data)
+

@@ -19,6 +19,11 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'email'
     
-# class Post(models.Model):
-#     title = models.CharField(max_length=20)
-#     description = models.CharField(max_length=200)
+class Post(models.Model):
+    title = models.CharField(max_length=20)
+    description = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    
