@@ -46,7 +46,6 @@ class UpdateUser(APIView):
                 return Response({'message': 'User has been updated'})
             except ObjectDoesNotExist:
                 return Response({'exception': 'User does not exist'})
-        return 
     
 class DeleteUser(APIView):
     queryset = User.objects.all()
