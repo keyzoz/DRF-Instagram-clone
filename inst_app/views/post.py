@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
-from inst_app.serializer import PostSerializer
-from inst_app.models import Post, PostLike
+from inst_app.serializer import PostSerializer,CommentSerializer
+from inst_app.models import Post, PostLike, PostComment
 
 
 class CreatePost(generics.CreateAPIView):
@@ -81,4 +81,52 @@ class LikePost(APIView):
         except ObjectDoesNotExist:
                 return Response({'exception': 'Post does not exist'})
 
+class CommentPost(generics.CreateAPIView):
+    queryset = Post.objects.all()
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CommentSerializer
 
+    def post(self, request ,pk):
+        try:
+            context = {
+                'request': request,
+            }
+
+            post = Post.objects.get(pk=pk) 
+            serializer = self.serializer_class(context=context, data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user,post=post)
+                return Response({'message': 'Comment has been created'})
+            else:
+                return Response({'exception': 'Comment cannot be added'})
+
+        except ObjectDoesNotExist:
+            return Response({'exception': 'Post does not exist'})
+
+class GetUserComments(generics.ListAPIView):
+    queryset = PostComment.objects.all()
+    serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, pk):
+        comments = PostComment.objects.filter(user = request.user.id,post=pk)
+        serializer = self.serializer_class(comments, many=True)
+        return Response({'comments': serializer.data })
+
+class DeleteComment(APIView):
+    queryset = PostComment.objects.all()
+    serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, pk):
+        try:
+            comment = PostComment.objects.get(pk=pk)
+            if request.user.id == comment.user.id:
+                comment.delete()
+                return Response({'comment': 'Comment has been deleted'})
+            else:
+                return Response({'exception': 'You\'re haven\'nt permissons'})
+        except ObjectDoesNotExist:
+            return Response({'exception': 'Comment does not exist'})

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from inst_app.models import User,Post
+from inst_app.models import User,Post,PostComment
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -34,3 +34,16 @@ class PostSerializer(serializers.ModelSerializer):
         if instance.user.id == validated_data['user'].id:
             return super().update(instance, validated_data)
 
+class CommentSerializer(serializers.ModelSerializer):
+    text = serializers.CharField()
+    
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    post = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = PostComment
+        fields = '__all__'
+
+    def save(self, **kwargs):
+        super(CommentSerializer, self).save(**kwargs)
+        return self.instance
