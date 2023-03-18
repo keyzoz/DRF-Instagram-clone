@@ -26,4 +26,10 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    
+
+class PostLike(models.Model):
+    post = models.ForeignKey(Post, null=False, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('post','user')

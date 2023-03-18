@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
 from inst_app.serializer import PostSerializer
-from inst_app.models import Post
+from inst_app.models import Post, PostLike
 
 
 class CreatePost(generics.CreateAPIView):
@@ -59,7 +59,26 @@ class GetUserPosts(generics.ListAPIView):
     authentication_classes = [TokenAuthentication, ]
     permission_classes = [IsAuthenticated]
 
-    def list(self, request, pk, *args, **kwargs):
-        posts = Post.objects.filter(user = pk)
+    def list(self, request,  *args, **kwargs):
+        posts = Post.objects.filter(user = request.user.id)
         serializer = self.serializer_class(posts, many=True)
         return Response({'posts': serializer.data })
+
+class LikePost(APIView):
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+    serializer_class = PostSerializer
+
+    def get(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+            likedPost = PostLike.objects.get_or_create(user=request.user, post=post)
+            if not likedPost[1]:
+                likedPost[0].delete()
+                return Response({'message': 'Post has been unliked'})
+            else:
+                return Response({'message': 'Like has been liked'})
+        except ObjectDoesNotExist:
+                return Response({'exception': 'Post does not exist'})
+
+
