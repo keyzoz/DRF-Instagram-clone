@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from inst_app.models import User,Post,PostComment
+from inst_app.models import User,UserFollow,Post,PostComment
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -47,3 +47,11 @@ class CommentSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         super(CommentSerializer, self).save(**kwargs)
         return self.instance
+
+class UserFollowSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    followed_user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = UserFollow
+        fields = '__all__'

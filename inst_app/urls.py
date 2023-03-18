@@ -7,6 +7,10 @@ urlpatterns = [
     path('user/<int:pk>/',user.GetUserByID.as_view()),
     path('user/update/',user.UpdateUser.as_view()),
     path('user/delete/<int:pk>/',user.DeleteUser.as_view()),
+    path('user/follow/<int:pk>/',user.FollowUser.as_view()),
+    path('user/followers/<int:pk>/',user.GetUserFollowers.as_view()),
+    path('user/following/<int:pk>/',user.GetUserSubs.as_view()),
+
 
     path('posts/', post.GetUserPosts.as_view()),
 
@@ -19,6 +23,5 @@ urlpatterns = [
     path('post/comment/delete/<int:pk>/',post.DeleteComment.as_view()),
 
     path('post/comments/<int:pk>/', post.GetUserComments.as_view()),
-
 
 ]

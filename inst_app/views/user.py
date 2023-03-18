@@ -5,10 +5,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 
-from inst_app.serializer import UserSerializer, UserLoginSerializer
-from inst_app.models import User
+from inst_app.serializer import UserSerializer, UserLoginSerializer, UserFollowSerializer
+from inst_app.models import User,UserFollow
 
 
 class CreateUser(generics.CreateAPIView):
@@ -63,5 +63,42 @@ class DeleteUser(APIView):
         except ObjectDoesNotExist:
             return Response({'exception': 'User does not exist'})
         
-        
-        
+class FollowUser(APIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            followingUser = User.objects.get(id=pk)
+            followUser = UserFollow.objects.get_or_create(user=request.user,followed_user=followingUser)
+            if not followUser[1]:
+                followUser[0].delete()
+                return Response({'message': 'User has been unfollowed'})
+            else:
+                return Response({'message': 'User has been followed'})
+        except ObjectDoesNotExist:
+            return Response({'exception': 'User does not exist'})
+
+class GetUserFollowers(generics.ListAPIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, pk):
+        followers = UserFollow.objects.filter(user = pk)
+        serializer = self.serializer_class(followers, many=True)
+        return Response({'followers': serializer.data })
+
+class GetUserSubs(generics.ListAPIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    authentication_classes = [TokenAuthentication, ]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, pk):
+        followers = UserFollow.objects.filter(followed_user = pk)
+        serializer = self.serializer_class(followers, many=True)
+        return Response({'following': serializer.data })

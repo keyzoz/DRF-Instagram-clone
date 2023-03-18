@@ -42,3 +42,6 @@ class PostComment(models.Model):
     post = models.ForeignKey(Post, null=False, on_delete=models.CASCADE)
     user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
 
+class UserFollow(models.Model):
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE,related_name='user')
+    followed_user = models.ForeignKey(User, null=False, on_delete=models.CASCADE,related_name='followed_user')
